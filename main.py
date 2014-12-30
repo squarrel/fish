@@ -76,10 +76,15 @@ class MainGame(Widget):
 		entity_3 = entities[2]
 		steering_3 = entity_3.steering
 		steering_3.target = (touch.x+200, touch.y+200)
-		if touch.x < 100 and touch.y < 100:
+		if touch.x < Window.size[0] * 0.1 and touch.y > Window.size[1] * 0.9:
 			if self.gameworld.state == 'main':
 				self.set_pause()
-			else:
+			elif gameworld.state == 'pause':
+				self.set_state()
+		if touch.x > Window.size[0] * 0.9 and touch.y > Window.size[1] * 0.9:
+			if self.gameworld.state == 'main':
+				self.set_menu()
+			elif gameworld.state == 'menu':
 				self.set_state()
 
 	def draw_some_stuff(self):
@@ -94,10 +99,13 @@ class MainGame(Widget):
 		ship_3 = self.create_ship(pos_3)
 		self.current_entity = ship_3
 		
-		self.draw_goal((200, 100), (140, 100))
-		self.draw_goal((200, 400), (140, 100))
+		self.draw_wall((Window.size[0]*0.01, Window.size[1]*0.5), (Window.size[0]*0.02, Window.size[1])) #left wall. the position starts at the center of the object, not at the bottom or top, not sure
+		self.draw_wall((Window.size[0]*0.99, Window.size[1]*0.5), (Window.size[0]*0.02, Window.size[1])) #right wall
+		self.draw_wall((Window.size[0]*0.5, Window.size[1]*0.01), (Window.size[0], Window.size[1]*0.03)) #bottom wall
+		self.draw_wall((Window.size[0]*0.5, Window.size[1]*0.97), (Window.size[0], Window.size[1]*0.06)) #top wall
 		
-		self.create_asteroid((250, 550))
+		for i in range(5):
+			self.create_asteroid((250+i*50, 250+i*20))
 
 	def no_collide(self, space, arbiter):
 		return False
@@ -139,7 +147,7 @@ class MainGame(Widget):
 			'physics', 'physics_renderer', 'steering']
 		return self.gameworld.init_entity(create_component_dict, component_order)
 
-	def draw_goal(self, pos, size, collision_type=4):
+	def draw_wall(self, pos, size, collision_type=4):
 		x_vel = 0
 		y_vel = 0
 		angle = 0

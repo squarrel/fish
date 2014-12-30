@@ -58,7 +58,6 @@ MainGame:
 		gameworld: gameworld
 		
 
-
 <GameScreenManager>:
 	MenuScreen:
 		id: menu_screen
@@ -69,13 +68,24 @@ MainGame:
 
 <MenuScreen@GameScreen>:
 	name: 'menu'
-	BoxLayout:
+	FloatLayout:
 		canvas:
 			Color:
 				rgba: .4, .4, 1, 1
-			Ellipse:
-				size: .5, .5
-				pos: 200, 300
+			Rectangle:
+				size: self.size
+				pos: self.pos
+		Label:
+			text: "Menu"
+			color: 0, 0, 0, 1
+			font_size: 24
+			size_hint: .1, .1
+			pos_hint: {'x': .44, 'y': .85}
+		Label:
+			text: 'Play'
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .935, 'y': .945}
 
 <MainScreen@GameScreen>:
 	name: 'main'
@@ -87,9 +97,16 @@ MainGame:
 				#size: self.size
 				#pos: self.pos
 		Label:
-			text: 'Pause Here'
-			size_hint: .1, .1
-			pos_hint: {'x': .02, 'y': .02}
+			text: 'Pause'
+			#markup: True
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .015, 'y': .945}
+		Label:
+			text: 'Menu'
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .935, 'y': .945}
 
 <PauseScreen@GameScreen>:
 	name: 'pause'
@@ -97,14 +114,17 @@ MainGame:
 		canvas:
 			Color:
 				rgba: .7, .7, .5, 1
-			#Rectangle:
-				#size: self.size
-				#pos: self.pos
+			Rectangle:
+				size: self.size
+				pos: self.pos
 		Label:
 			text: "Paused"
+			color: 0, 0, 0, 1
 			font_size: 24
-			pos_hint: {'x': .45, 'y': .45}
+			size_hint: .1, .1
+			pos_hint: {'x': .44, 'y': .85}
 		Label:
 			text: 'Unpause'
-			size_hint: .1, .1
-			pos_hint: {'x': .02, 'y': .02}
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .015, 'y': .945}
