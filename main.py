@@ -11,13 +11,12 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 import cymunk
 from random import randint
-from math import radians#, atan2, degrees
+from math import radians
 import kivent_core
 import kivent_cymunk
 from kivent_core.gamesystems import GameSystem
 from kivent_core.renderers import texture_manager
-#from cymunk import PivotJoint, GearJoint, Body
-from kivy.properties import NumericProperty#, ListProperty
+from kivy.properties import NumericProperty
 
 texture_manager.load_atlas('assets/background_objects.atlas')
 texture_manager.load_atlas('assets/foreground_objects.atlas')
@@ -52,9 +51,6 @@ class MainGame(Widget):
 		else:
 			Clock.schedule_once(self.init_game)
 
-	def btn_press(self):
-		print('Hey, ya pressed me!')
-
 	def movement(self):
 		self.x_1 += 1
 		self.y_1 += 1
@@ -67,8 +63,8 @@ class MainGame(Widget):
 		steering_1.target = (self.x_1, self.y_1)
 
 	def on_touch_down(self, touch):
-		
 		gameworld = self.gameworld
+		
 		entities = gameworld.entities
 		entity_2 = entities[1]
 		steering_2 = entity_2.steering
@@ -76,35 +72,35 @@ class MainGame(Widget):
 		entity_3 = entities[2]
 		steering_3 = entity_3.steering
 		steering_3.target = (touch.x+200, touch.y+200)
-		if touch.x < Window.size[0] * 0.1 and touch.y > Window.size[1] * 0.9:
+		if touch.x < Window.size[0] * 0.1 and touch.y > Window.size[1] * 0.95:
 			if self.gameworld.state == 'main':
 				self.set_pause()
 			elif gameworld.state == 'pause':
 				self.set_state()
-		if touch.x > Window.size[0] * 0.9 and touch.y > Window.size[1] * 0.9:
+		if touch.x > Window.size[0] * 0.9 and touch.y > Window.size[1] * 0.95:
 			if self.gameworld.state == 'main':
 				self.set_menu()
 			elif gameworld.state == 'menu':
 				self.set_state()
 
 	def draw_some_stuff(self):
-		size = Window.size
+		size_x = Window.size[0]
+		size_y = Window.size[1]
+		
 		pos_1 = (250, 150)
 		ship_1 = self.create_ship(pos_1)
-		self.current_entity = ship_1
 		pos_2 = (250, 100)
 		ship_2 = self.create_ship(pos_2)
-		self.current_entity = ship_2
 		pos_3 = (250, 300)
 		ship_3 = self.create_ship(pos_3)
 		self.current_entity = ship_3
 		
-		self.draw_wall((Window.size[0]*0.01, Window.size[1]*0.5), (Window.size[0]*0.02, Window.size[1])) #left wall. the position starts at the center of the object, not at the bottom or top, not sure
-		self.draw_wall((Window.size[0]*0.99, Window.size[1]*0.5), (Window.size[0]*0.02, Window.size[1])) #right wall
-		self.draw_wall((Window.size[0]*0.5, Window.size[1]*0.01), (Window.size[0], Window.size[1]*0.03)) #bottom wall
-		self.draw_wall((Window.size[0]*0.5, Window.size[1]*0.97), (Window.size[0], Window.size[1]*0.06)) #top wall
+		self.draw_wall((size_x*0.01, size_y*0.5), (size_x*0.02, size_y)) #left wall. the position starts at the center of the object, not at the bottom or top, not sure
+		self.draw_wall((size_x*0.99, size_y*0.5), (size_x*0.02, size_y)) #right wall
+		self.draw_wall((size_x*0.5, size_y*0.01), (size_x, size_y*0.03)) #bottom wall
+		self.draw_wall((size_x*0.5, size_y*0.97), (size_x, size_y*0.06)) #top wall
 		
-		for i in range(5):
+		for i in range(10):
 			self.create_asteroid((250+i*50, 250+i*20))
 
 	def no_collide(self, space, arbiter):
@@ -125,7 +121,7 @@ class MainGame(Widget):
 		shape_dict = {'inner_radius': 0, 'outer_radius': 45, 
 			'mass': 10, 'offset': (0, 0)}
 		col_shape = {'shape_type': 'circle', 'elasticity': .0, 
-			'collision_type': 1, 'shape_info': shape_dict, 'friction': .7}
+			'collision_type': 1, 'shape_info': shape_dict, 'friction': 0.5}
 		col_shapes = [col_shape]
 		physics_component = {'main_shape': 'circle', 
 			'velocity': (x_vel, y_vel), 
@@ -157,7 +153,7 @@ class MainGame(Widget):
 			'mass': 0, 'offset': (0, 0)}
 		col_shape = {'shape_type': 'box', 'elasticity': .5,
 		'collision_type': collision_type, 'shape_info': shape_dict,
-			'friction': 1.0}
+			'friction': 0.5}
 		col_shapes = [col_shape]
 		physics_component = {'main_shape': 'box',
 			'velocity': (x_vel, y_vel),
@@ -180,10 +176,10 @@ class MainGame(Widget):
 		y_vel = randint(-100, 100)
 		angle = radians(randint(-360, 360))
 		angular_velocity = radians(randint(-150, -150))
-		shape_dict = {'inner_radius': 0, 'outer_radius': 32,
+		shape_dict = {'inner_radius': 0, 'outer_radius': 16,
 			'mass': 50, 'offset': (0, 0)}
 		col_shape = {'shape_type': 'circle', 'elasticity': .5,
-			'collision_type': 1, 'shape_info': shape_dict, 'friction': 1.0}
+			'collision_type': 1, 'shape_info': shape_dict, 'friction': 0.5}
 		col_shapes = [col_shape]
 		physics_component = {'main_shape': 'circle',
 			'velocity': (x_vel, y_vel),
@@ -194,7 +190,7 @@ class MainGame(Widget):
 			'mass': 50, 'col_shapes': col_shapes}
 		create_component_dict = {'physics': physics_component,
 			'renderer': {'texture': 'asteroid1',
-			'size': (64, 64),
+			'size': (32, 32),
 			'render': True},
 			'position': pos, 'rotate': 0,
 			}
