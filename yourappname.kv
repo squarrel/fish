@@ -1,0 +1,155 @@
+#:kivy 1.8.0
+
+MainGame:
+
+<MainGame>:
+	
+	gameworld: gameworld
+	GameWorld:
+		id: gameworld
+		gamescreenmanager: gamescreenmanager
+				
+		Image:
+			source: 'assets/background.png'
+			size: 1000, 600
+			pos: self.pos
+		
+		PositionSystem:
+			system_id: 'position'
+			gameworld: gameworld
+								
+		RotateSystem:
+			system_id: 'rotate'
+			gameworld: gameworld
+		GameView:
+			system_id: 'gameview'
+			focus_entity: False
+			updateable: False
+			gameworld: gameworld
+			pos: root.pos
+			do_scroll: False
+			size: root.size
+		GameMap:
+			system_id: 'map'
+			map_size: root.size
+			gameworld: gameworld
+		Renderer:
+			gameworld: gameworld
+			system_id: 'renderer'
+			shader_source: 'assets/glsl/positionshader.glsl'
+			gameview: 'gameview'
+		Renderer:
+			gameworld: gameworld
+			system_id: 'physics_renderer'
+			do_rotate: True
+			shader_source: 'assets/glsl/positionrotateshader.glsl'
+			gameview: 'gameview'
+		CymunkPhysics:
+			gameworld: gameworld
+			system_id: 'physics'
+		SteeringSystem:
+			physics_system: 'physics'
+			system_id: 'steering'
+			gameworld: gameworld
+	GameScreenManager:
+		id: gamescreenmanager
+		size: root.size
+		pos: root.pos
+		gameworld: gameworld
+		
+
+<GameScreenManager>:
+	MenuScreen:
+		id: menu_screen
+	MainScreen:
+		id: main_screen
+	PauseScreen:
+		id: pause_screen
+	MessageScreen:
+		id: message_screen
+
+<MenuScreen@GameScreen>:
+	name: 'menu'
+	FloatLayout:
+		canvas:
+			Color:
+				rgba: .4, .4, 1, 1
+			Rectangle:
+				size: self.size
+				pos: self.pos
+		Label:
+			text: "Menu"
+			color: 0, 0, 0, 1
+			font_size: 24
+			size_hint: .1, .1
+			pos_hint: {'x': .44, 'y': .85}
+		Label:
+			text: 'Play'
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .935, 'y': .945}
+
+<MainScreen@GameScreen>:
+	name: 'main'
+	FloatLayout:
+		canvas:
+			Color:
+				rgba: .4, .4, 1, 1
+		Label:
+			text: 'Pause'
+			#markup: True
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .015, 'y': .945}
+		Label:
+			text: 'Menu'
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .935, 'y': .945}
+		Label:
+			text: 'Score: '+str(app.score)
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .453, 'y': .945}
+			
+<PauseScreen@GameScreen>:
+	name: 'pause'
+	FloatLayout:
+		canvas:
+			Color:
+				rgba: .7, .7, .5, 1
+			Rectangle:
+				size: self.size
+				pos: self.pos
+		Label:
+			text: "Paused"
+			color: 0, 0, 0, 1
+			font_size: 24
+			size_hint: .1, .1
+			pos_hint: {'x': .44, 'y': .85}
+		Label:
+			text: 'Continue'
+			color: 0, 0, 0, 1
+			size_hint: .05, .05
+			pos_hint: {'x': .015, 'y': .945}
+
+<MessageScreen@GameScreen>:
+	name: 'message'
+	FloatLayout:
+		canvas:
+			Color:
+				rgba: .0, .0, .0, .3
+			Rectangle:
+				size: self.size
+				pos: self.pos
+		Label:
+			text: "Great! You win! Continue to the next level."
+			color: 1, 1, 1, 1
+			font_size: 24
+			size_hint: .1, .1
+			pos_hint: {'x': .44, 'y': .85}
+		Image:
+			source: 'assets/continue.png'
+			size_hint: .1, .1
+			pos_hint: {'x': .44, 'y': .54}
+				
