@@ -107,7 +107,7 @@ MainGame:
 			size_hint: .05, .05
 			pos_hint: {'x': .935, 'y': .945}
 		Label:
-			text: 'Score: '+str(app.score)
+			text: 'Score: ' + str(app.score)
 			color: 0, 0, 0, 1
 			size_hint: .05, .05
 			pos_hint: {'x': .453, 'y': .945}
@@ -143,7 +143,7 @@ MainGame:
 				size: self.size
 				pos: self.pos
 		Label:
-			text: "Great! You win! Continue to the next level."
+			text: app.message
 			color: 1, 1, 1, 1
 			font_size: 24
 			size_hint: .1, .1

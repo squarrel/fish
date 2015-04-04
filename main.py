@@ -22,7 +22,7 @@ from functools import partial
 
 texture_manager.load_atlas('assets/background_objects.atlas')
 texture_manager.load_atlas('assets/foreground_objects.atlas')
-
+texture_manager.load_atlas('assets/fishatlas.atlas')
 
 class MainGame(Widget):
 	current_entity = NumericProperty(None)
@@ -30,6 +30,7 @@ class MainGame(Widget):
 	y_1 = NumericProperty(0)
 	count = 0
 	
+	# Initialization function
 	def __init__(self, **kwargs):
 		super(MainGame, self).__init__(**kwargs)
 		Clock.schedule_once(self.init_game)
@@ -48,17 +49,19 @@ class MainGame(Widget):
 		if self.ensure_startup():
 			self.setup_map()
 			self.setup_states()
-			self.set_state()
+			self.set_main()
 			self.draw_some_stuff()
 			self.setup_collision_callbacks()
 			Clock.schedule_interval(self.update, 0)
 		else:
 			Clock.schedule_once(self.init_game)
 
+	# ...
 	def movement(self):
 		self.x_1 += 1
 		self.y_1 += 1
 
+	# ...
 	def move_it(self):
 		gameworld = self.gameworld
 		entities = gameworld.entities
@@ -73,43 +76,28 @@ class MainGame(Widget):
 		win_x = Window.size[0]
 		win_y = Window.size[1]
 		
-		if self.gameworld.state == 'main' and App.get_running_app().level == 1:
-			entity_1 = entities[1]
-			steering_1 = entity_1.steering
-			steering_1.target = (touch.x+100, touch.y)
-			entity_2 = entities[2]
-			steering_2 = entity_2.steering
-			steering_2.target = (touch.x+100, touch.y+100)
-			entity_3 = entities[3]
-			steering_3 = entity_3.steering
-			steering_3.target = (touch.x, touch.y+100)
-			entity_4 = entities[4]
-			steering_4 = entity_4.steering
-			steering_4.target = (touch.x, touch.y+100)
-			entity_5 = entities[5]
-			steering_5 = entity_5.steering
-			steering_5.target = (touch.x, touch.y+100)
-			entity_6 = entities[6]
-			steering_6 = entity_6.steering
-			steering_6.target = (touch.x, touch.y+100)
-			entity_7 = entities[7]
-			steering_7 = entity_7.steering
-			steering_7.target = (touch.x, touch.y+100)
+		if self.gameworld.state == 'main':
+			for entity in entities:
+				if hasattr(entity, "steering"):
+					steering = entity.steering
+					steering.target = (touch.x, touch.y)
 			
-		if self.gameworld.state == 'message':
+		elif self.gameworld.state == 'message':
 			if touch.x > win_x * 0.4 and touch.x < win_x * 0.6 and touch.x > win_y * 0.4 and touch.y < win_y * 0.6:
-				self.set_state()
+				self.set_main()
+				self.draw_some_stuff()
 		
-		if touch.x < Window.size[0] * 0.1 and touch.y > Window.size[1] * 0.95:
+		elif touch.x < Window.size[0] * 0.1 and touch.y > Window.size[1] * 0.95:
 			if self.gameworld.state == 'main':
 				self.set_pause()
 			elif gameworld.state == 'pause':
-				self.set_state()
-		if touch.x > Window.size[0] * 0.9 and touch.y > Window.size[1] * 0.95:
+				self.set_main()
+				
+		elif touch.x > Window.size[0] * 0.9 and touch.y > Window.size[1] * 0.95:
 			if self.gameworld.state == 'main':
 				self.set_menu()
 			elif gameworld.state == 'menu':
-				self.set_state()
+				self.set_main()
 
 	# Draw
 	def draw_some_stuff(self):
@@ -117,7 +105,7 @@ class MainGame(Widget):
 		size_y = Window.size[1]
 		
 		for j in range(7):
-			self.create_fish((100+j*40, 100+j*40))
+			self.create_fish((100+j*40, 100+j*40)) #position x, y on the screen
 			if j == 0:
 				self.current_entity = j
 		
@@ -130,6 +118,10 @@ class MainGame(Widget):
 	def enter_breadcrumbs(self):
 		r = random.uniform(Window.size[0]*0.1, Window.size[0]*0.9)
 		self.create_breadcrumb((r, Window.size[1]*0.9))
+
+	def enter_bad_breadcrumbs(self):
+		r = random.uniform(Window.size[0]*0.1, Window.size[0]*0.9)
+		self.create_bad_breadcrumb((r, Window.size[1]*0.9))
 
 	# Remove entities
 	def remove_entities(self, entity_id):
@@ -144,6 +136,14 @@ class MainGame(Widget):
 	# Jump to level
 	def jump_to_level(self, dt):
 		self.clear_level()
+		
+		if App.get_running_app().level == 2:
+			App.get_running_app().message = "Congratulations for reaching level 2!"
+		elif App.get_running_app().level == 3:
+			App.get_running_app().message = "Congratulations for reaching level 3!"
+		elif App.get_running_app().level == 4:
+			App.get_running_app().message = "Congratulations for reaching level 4!"
+			
 		self.set_message()
 		
 	# Collision start
@@ -153,20 +153,30 @@ class MainGame(Widget):
 		
 		self.remove_entities(ent2_id)
 		
+	def begin_collide_2(self, space, arbiter):
+		ent1_id = arbiter.shapes[0].body.data
+		ent2_id = arbiter.shapes[1].body.data
+		
+		print("Bad breadcrumb collision")
+		
 	# Collision end
 	'''def finish_collide(self, space, arbiter):
 		print('finish collide')'''
 
-	# Collisions
+	# Collisions callbacks
 	def setup_collision_callbacks(self):
 		systems = self.gameworld.systems
 		physics_system = systems['physics']
-		
 		physics_system.gravity = (0, -100)
 		
 		physics_system.add_collision_handler(
 			1, 2, 
 			begin_func=self.begin_collide
+			)
+			
+		physics_system.add_collision_handler(
+			1, 3,
+			begin_func=self.begin_collide_2
 			)
 			
 	# Fish
@@ -194,7 +204,9 @@ class MainGame(Widget):
 			'speed': 350,
 			}
 		create_component_dict = {'physics': physics_component, 
-			'physics_renderer': {'texture': 'ship7', 'size': (96 , 88)}, 
+			'physics_renderer': {'texture': 'fish',
+			'size': (96 , 88)
+			}, 
 			'position': pos, 'rotate': 0, 'steering': steering_component}
 		component_order = ['position', 'rotate', 
 			'physics', 'physics_renderer', 'steering']
@@ -248,7 +260,35 @@ class MainGame(Widget):
 			'ang_vel_limit': radians(200),
 			'mass': 50, 'col_shapes': col_shapes}
 		create_component_dict = {'physics': physics_component,
-			'renderer': {'texture': 'asteroid1',
+			'renderer': {'texture': 'breadcrumb',
+			'size': (32, 32),
+			'render': True},
+			'position': pos, 'rotate': 0,
+			}
+		component_order = ['position', 'rotate', 'physics', 'renderer']
+		
+		return self.gameworld.init_entity(create_component_dict, component_order)
+		
+	# Bad breadcrumbs
+	def create_bad_breadcrumb(self, pos):
+		x_vel = 0
+		y_vel = -5
+		angle = radians(randint(-360, 360))
+		angular_velocity = radians(randint(-150, -150))
+		shape_dict = {'inner_radius': 0, 'outer_radius': 16,
+			'mass': 50, 'offset': (0, 0)}
+		col_shape = {'shape_type': 'circle', 'elasticity': .5,
+			'collision_type': 2, 'shape_info': shape_dict, 'friction': 0.5}
+		col_shapes = [col_shape]
+		physics_component = {'main_shape': 'circle',
+			'velocity': (x_vel, y_vel),
+			'position': pos, 'angle': angle,
+			'angular_velocity': angular_velocity,
+			'vel_limit': 250,
+			'ang_vel_limit': radians(200),
+			'mass': 50, 'col_shapes': col_shapes}
+		create_component_dict = {'physics': physics_component,
+			'renderer': {'texture': 'bad_breadcrumb',
 			'size': (32, 32),
 			'render': True},
 			'position': pos, 'rotate': 0,
@@ -262,16 +302,27 @@ class MainGame(Widget):
 		gameworld = self.gameworld
 		gameworld.currentmap = gameworld.systems['map']
 
-	# Update -------------------
+	# Update --- the main loop
 	def update(self, dt):
 		self.gameworld.update(dt)
-		#self.movement()
-		#self.move_it()
 		self.count += 0.25
-		#print(self.count)
+		
 		if self.count % 17 == 0.0:
 			self.enter_breadcrumbs()
+		
+		if self.count % 57 == 0.0:
+			self.enter_bad_breadcrumbs()
+			
 		if App.get_running_app().level == 1 and App.get_running_app().score == 10:
+			App.get_running_app().score += 1
+			App.get_running_app().level += 1
+			Clock.schedule_once(self.jump_to_level)
+		elif App.get_running_app().level == 2 and App.get_running_app().score == 20:
+			App.get_running_app().score += 1
+			App.get_running_app().level += 1
+			Clock.schedule_once(self.jump_to_level)
+			Clock.schedule_once(self.jump_to_level)
+		elif App.get_running_app().level == 3 and App.get_running_app().score == 30:
 			App.get_running_app().score += 1
 			App.get_running_app().level += 1
 			Clock.schedule_once(self.jump_to_level)
@@ -280,7 +331,7 @@ class MainGame(Widget):
 	def setup_states(self):
 		self.gameworld.add_state(state_name='menu',
 			systems_added=['renderer', 'physics_renderer', 'steering'],
-			systems_removed=[], 
+			systems_removed=[],
 			systems_paused=['steering'],
 			systems_unpaused=['renderer', 'physics_renderer'],
 			screenmanager_screen='menu')
@@ -295,8 +346,8 @@ class MainGame(Widget):
 		self.gameworld.add_state(state_name='pause',
 			systems_added=['renderer', 'physics_renderer', 'steering'],
 			systems_removed=[],
-			systems_paused=['steering'],
-			systems_unpaused=['renderer', 'physics_renderer'],
+			systems_paused=['renderer', 'steering', 'physics_renderer'],
+			systems_unpaused=[],
 			screenmanager_screen='pause')
 			
 		self.gameworld.add_state(state_name='message',
@@ -312,7 +363,7 @@ class MainGame(Widget):
 		print(self.gameworld.state)
 
 	# Main
-	def set_state(self):
+	def set_main(self):
 		self.gameworld.state = 'main'
 		print(self.gameworld.state)
 	
@@ -329,6 +380,7 @@ class MainGame(Widget):
 class YourAppNameApp(App):
 	score = NumericProperty(0)
 	level = 1
+	message = StringProperty('')
 	
 	def build(self):
 		Window.clearcolor = (0.1, 0.1, 0.1, 1.)
