@@ -20,8 +20,6 @@ from kivy.properties import NumericProperty, StringProperty
 import random
 from functools import partial
 
-texture_manager.load_atlas('assets/background_objects.atlas')
-texture_manager.load_atlas('assets/foreground_objects.atlas')
 texture_manager.load_atlas('assets/fishatlas.atlas')
 
 class MainGame(Widget):
